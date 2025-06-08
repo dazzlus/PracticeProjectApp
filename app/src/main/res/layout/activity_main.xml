@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:padding="16dp">
 
@@ -13,23 +14,36 @@
         android:inputType="text"
         android:imeOptions="actionDone"/>
 
-    <Button
-        android:id="@+id/btnTomato"
-        android:text="Tomato"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+<!--    <Button-->
+<!--        android:id="@+id/btnTomato"-->
+<!--        android:text="Tomato"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content" />-->
 
-    <Button
-        android:id="@+id/btnCheese"
-        android:text="Cheese"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+<!--    <Button-->
+<!--        android:id="@+id/btnCheese"-->
+<!--        android:text="Cheese"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content" />-->
+
+
+
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/chipGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="8dp"
+        app:singleLine="true"
+        app:selectionRequired="false"
+        app:checkedChip="@id/none"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvRecipes"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:paddingTop="16dp"/>
+        android:paddingTop="16dp" />
 
 </LinearLayout>
+
+

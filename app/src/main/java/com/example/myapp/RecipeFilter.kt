@@ -1,8 +1,9 @@
 package com.example.myapp
 
 class RecipeFilter {
-    private val ingredientFilter= mutableMapOf<String, FilterState>()
     private var searchText = ""
+    private val ingredientFilter= mutableMapOf<String, FilterState>()
+
 
     //меняет состояние фильта (добавить, исключить, не трогать)
     fun toggleIngredient(ingredient: String){
@@ -27,6 +28,10 @@ class RecipeFilter {
 
     fun getSelectedIngredients(): Map<String, FilterState> {
         return ingredientFilter.toMap()
+    }
+
+    fun getIngredientState(ingredient: String): FilterState {
+        return ingredientFilter[ingredient] ?: FilterState.NONE
     }
 
     fun filterRecipes(recipes: List<Recipe>): List<Recipe> {

@@ -6,11 +6,14 @@ import android.widget.Button
 import android.widget.EditText
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.widget.addTextChangedListener
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.chip.Chip
+import com.google.android.material.chip.ChipGroup
 import java.io.BufferedReader
 import java.io.InputStreamReader
 
@@ -45,15 +48,37 @@ class MainActivity : AppCompatActivity() {
         recyclerView.adapter = recipeAdapter
 
         // Buttons for ingredients
-        findViewById<Button>(R.id.btnTomato)?.setOnClickListener {
-            recipeFilter.toggleIngredient("tomato")
-            applyFilter()
+        val chipGroup = findViewById<ChipGroup>(R.id.chipGroup)
+        val ingredients = loadIngredientsFromCSV()
+
+        for (ingredient in ingredients) {
+            val chip = Chip(this).apply {
+                text = ingredient
+                isCheckable = true
+                isClickable = true
+                isCloseIconVisible = false
+                setEnsureMinTouchTargetSize(false)
+                isChecked = false // Start unselected
+            }
+
+            // Set click listener
+            chip.setOnCheckedChangeListener { _, isChecked ->
+                if (isChecked) {
+                    recipeFilter.toggleIngredient(ingredient)
+                } else {
+                    recipeFilter.toggleIngredient(ingredient)
+                }
+                applyFilter()
+                updateChipAppearance(chip, recipeFilter.getIngredientState(ingredient))
+            }
+
+            // Initially set appearance based on current state
+            updateChipAppearance(chip, recipeFilter.getIngredientState(ingredient))
+
+            chipGroup.addView(chip)
         }
 
-        findViewById<Button>(R.id.btnCheese)?.setOnClickListener {
-            recipeFilter.toggleIngredient("cheese")
-            applyFilter()
-        }
+
 
         // Search bar
         val etSearch = findViewById<EditText>(R.id.etSearch)
@@ -63,6 +88,54 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun loadIngredientsFromCSV(): List<String> {
+        val ingredients = mutableListOf<String>()
+        try {
+            val inputStream = assets.open("types.csv")
+            val reader = BufferedReader(InputStreamReader(inputStream))
+            var line: String?
+            var isFirstLine = true
+
+            while (reader.readLine().also { line = it } != null) {
+                if (isFirstLine) {
+                    isFirstLine = false
+                    continue
+                }
+
+                // Split the line by comma and trim each value
+                val lineSplit = line!!.split(",").map { it.trim() }
+                for (item in lineSplit) {
+                    if (item.isNotEmpty()) {
+                        ingredients.add(item)
+                    }
+                }
+            }
+
+            reader.close()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        return ingredients
+    }
+
+
+
+    private fun updateChipAppearance(chip: Chip, state: FilterState) {
+        when (state) {
+            FilterState.INCLUDE -> {
+                chip.chipBackgroundColor = ContextCompat.getColorStateList(this, R.color.include_color)
+                chip.isChecked = true
+            }
+            FilterState.EXCLUDE -> {
+                chip.chipBackgroundColor = ContextCompat.getColorStateList(this, R.color.exclude_color)
+                chip.isChecked = true
+            }
+            FilterState.NONE -> {
+                chip.chipBackgroundColor = ContextCompat.getColorStateList(this, R.color.none_color)
+                chip.isChecked = false
+            }
+        }
+    }
     private fun applyFilter() {
         val filteredList = recipeFilter.filterRecipes(allRecipes)
         recipeAdapter.updateList(filteredList)
