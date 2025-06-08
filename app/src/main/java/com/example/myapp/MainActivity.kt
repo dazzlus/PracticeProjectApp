@@ -2,6 +2,7 @@ package com.example.myapp
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import androidx.activity.enableEdgeToEdge
@@ -23,6 +24,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var recipeAdapter: RecipeAdapter
     private lateinit var recipeFilter: RecipeFilter
     private lateinit var allRecipes: List<Recipe>
+    private lateinit var filterSuggestionAdapter: FilterSuggestionAdapter
+    private lateinit var etFilterSearch: EditText
+    private lateinit var rvFilterResults: RecyclerView
+    private lateinit var allIngredients: List<String>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -80,11 +85,31 @@ class MainActivity : AppCompatActivity() {
 
 
 
-        // Search bar
+        // Search bar for recipes
         val etSearch = findViewById<EditText>(R.id.etSearch)
         etSearch.addTextChangedListener {
             recipeFilter.setSearchText(it.toString())
             applyFilter()
+        }
+
+        //search bar for ingredients (filters)
+        allIngredients = loadIngredientsFromCSV().distinct()
+        etFilterSearch = findViewById(R.id.etFilterSearch)
+        rvFilterResults = findViewById(R.id.rvFilterResults)
+        filterSuggestionAdapter = FilterSuggestionAdapter(allIngredients) { ingredient ->
+            toggleChip(ingredient)
+            etFilterSearch.setText("") // Clear search after selecting
+            rvFilterResults.visibility = View.GONE
+        }
+
+        rvFilterResults.adapter = filterSuggestionAdapter
+        rvFilterResults.layoutManager = LinearLayoutManager(this)
+
+// Set up search listener
+        etFilterSearch.addTextChangedListener { editable ->
+            val query = editable.toString()
+            filterSuggestionAdapter.filter(query)
+            rvFilterResults.visibility = if (query.isNotEmpty()) View.VISIBLE else View.GONE
         }
     }
 
@@ -136,6 +161,43 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+
+    private fun toggleChip(ingredient: String) {
+        recipeFilter.toggleIngredient(ingredient)
+
+        // Find if chip already exists
+        val chipGroup = findViewById<ChipGroup>(R.id.chipGroup)
+        val existingChipIndex = (0 until chipGroup.childCount).map { chipGroup.getChildAt(it) }
+            .indexOfFirst { (it as? Chip)?.text == ingredient }
+
+        if (existingChipIndex == -1) {
+            // Not found — create a new one
+            val chip = Chip(this).apply {
+                text = ingredient
+                isCheckable = true
+                isClickable = true
+                setEnsureMinTouchTargetSize(false)
+            }
+
+            chip.setOnCheckedChangeListener { _, isChecked ->
+                if (isChecked) {
+                    recipeFilter.toggleIngredient(ingredient)
+                } else {
+                    recipeFilter.resetIngredient(ingredient)
+                }
+                applyFilter()
+                updateChipAppearance(chip, recipeFilter.getIngredientState(ingredient))
+            }
+
+            updateChipAppearance(chip, recipeFilter.getIngredientState(ingredient))
+            chipGroup.addView(chip)
+        } else {
+            // Already exists — just update its state
+            val chip = chipGroup.getChildAt(existingChipIndex) as Chip
+            updateChipAppearance(chip, recipeFilter.getIngredientState(ingredient))
+        }
+    }
+
     private fun applyFilter() {
         val filteredList = recipeFilter.filterRecipes(allRecipes)
         recipeAdapter.updateList(filteredList)

@@ -26,6 +26,10 @@ class RecipeFilter {
         searchText = text.trim()
     }
 
+    fun resetIngredient(ingredient: String) {
+        ingredientFilter.remove(ingredient)
+    }
+
     fun getSelectedIngredients(): Map<String, FilterState> {
         return ingredientFilter.toMap()
     }

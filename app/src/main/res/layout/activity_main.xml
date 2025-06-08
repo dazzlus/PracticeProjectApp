@@ -37,6 +37,25 @@
         app:selectionRequired="false"
         app:checkedChip="@id/none"/>
 
+    <!-- Search bar to find ingredients -->
+    <EditText
+        android:id="@+id/etFilterSearch"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginTop="8dp"
+        android:hint="Search ingredients..."
+        android:padding="8dp"
+        android:drawablePadding="8dp"
+        android:background="@android:drawable/editbox_background" />
+
+    <!-- RecyclerView to show search results -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvFilterResults"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:visibility="gone" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvRecipes"
         android:layout_width="match_parent"
